@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" >
+<!-- for mobile devices -->
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<title>NHC Active Storm GMap3 Map</title>
+
+<script src="http://maps.googleapis.com/maps/api/js?libraries=weather&sensor=false"></script>
+<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script> 
+<script type="text/javascript" src="jquery.jfeed.pack.js"></script>
+<script type="text/javascript" src="NHCStormFeed.js"></script>
+<script type="text/javascript">
+
+var nhc_url = 'proxy.php?url=http://www.nhc.noaa.gov/index-at.xml';
+
+var feed_type = 'KMZ';
+var kml_layers = [];
+var map_center_lat = 35.504041;
+var map_center_lng = -78.976525;
+var map_center_zoom = 5;
+var map_type;
+var map;
+
+function initialize()
+{
+   map_type = google.maps.MapTypeId.TERRAIN; 
+	var map_center_pt = new google.maps.LatLng(map_center_lat,map_center_lng);
+	var mapOpts = {
+		zoom: map_center_zoom,
+		center: map_center_pt,
+		mapTypeId: map_type
+	};
+	map = new google.maps.Map(document.getElementById("map_canvas"), mapOpts);
+  // cloud layer is good with storm tracks
+  var cloudLayer = new google.maps.weather.CloudLayer();
+  cloudLayer.setMap(map);
+  getNHCFeed(nhc_url, feed_type, addToSelect);
+
+} // end initialize
+///////////////////////////////////////////////////
+// Add the KML links to a select list with titles
+/////////////////
+function addToSelect(){
+  var add_options = [];
+  for(var i = 0; i < nhc_results.length && i < nhc_results.length; i++) {
+    var key = nhc_results[i].link;
+    var label = nhc_results[i].title;
+    add_options.push('<option value="'+ key +'">'+ label +'</option>');
+  }
+  $('#otherLayers').append(add_options.join(''));
+}
+/////////////////////////////////////////////////////
+function showLinks(){
+  var html = '';
+  for(var i = 0; i < nhc_results.length && i < nhc_results.length; i++) {
+    html += nhc_results[i].storm_name + ' ' + nhc_results[i].storm_year + ' ' + nhc_results[i].storm_num + ' ' + nhc_results[i].adv_num + '<br />';
+    html += nhc_results[i].link + ' ' + nhc_results[i].type + '<br />';
+    html += nhc_results[i].updated + '<br />';
+  }
+  $("#showLinks").text('');
+  $("#showLinks").append(html);
+}
+///////////////////////////////////////////////////////
+// Get the Best Track KML link from NHC.
+// val is "YYYY NN" where NN is the zero padded NHC storm number
+////////////////////////////
+function showStorm(val)
+{
+  if(!val){
+    return;
+  }
+  var tmp = val.split(' ');
+  var lnk;
+  if(tmp.length == 2){
+    lnk = getNHCBestTrackLink(tmp[0], tmp[1])
+  }
+  addNHCKmlLayer(map, lnk);
+}
+/////////////////////////////////////////////////////////
+function clearNHCKmls()
+{
+    var layer = null;
+    for(var i=0, layer; layer = kml_layers[i]; i++){
+        layer.setMap(null);
+    } 
+    kml_layers = [];
+}
+/////////////////////////////////////////////////////////
+function addNHCKmlLayer(map, kml_url)
+{
+    if (kml_url === ''){
+      clearNHCKmls();
+      return;
+    }
+    // default is to zoom to the KML extent
+    // This option prevents that.
+    var kml_options = {preserveViewport: true};
+    //var kml_options = {};
+    var kml_layer = new google.maps.KmlLayer(kml_url, kml_options);
+    if(! kml_layer){
+        alert("no layer");
+        return;
+    }
+    kml_layer.setMap(map);
+    kml_layers.push(kml_layer);
+
+    return(kml_layer);
+}
+</script>
+
+</head>
+<body onload="initialize();">
+<table>
+<tr>
+<td valign="top">
+<div id="map_canvas" style="width: 800px; height: 650px; border: 1px solid"></div>
+</td>
+</tr>
+</table>
+NHC Active Storms:<br />
+<select id="otherLayers" onChange="addNHCKmlLayer(map, this.value);">
+   <option value="NONE">None</option>
+</select>
+<input type="button" value="Clear" onClick="clearNHCKmls();">
+<input type="button" value="Show Links" onClick="showLinks();">
+<br />
+<select id="storms" onChange="showStorm(this.value);">
+<option value="">-- select storm --</option>
+<option value="2012 09">ISSAC</option>
+</select>
+<div id="showLinks"></div>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" >
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>NHC Atlantic Storm RSS feed Parser</title>
+<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script> 
+<script type="text/javascript" src="jquery.jfeed.pack.js"></script>
+<script type="text/javascript" src="NHCStormFeed.js"></script>
+
+<script type="text/javascript">
+
+// Cross Domain Javascript limitation requires proxy.php for 
+var nhc_url = 'proxy.php?url=http://www.nhc.noaa.gov/index-at.xml';
+////////////////////////
+function checkFeed(feed_type){
+  // callback function is optional
+  getNHCFeed(nhc_url, feed_type, function(){ alert("Feed Parsed"); });
+}
+/////////////////////////
+function showAll(){
+  if( nhc_results.length == 0){
+    alert("No NHC Results. Run Check Feed first.");
+    return;
+  }
+  var msg = '';
+  for(var i = 0; i < nhc_results.length && i < nhc_results.length; i++) {
+     this_result = nhc_results[i];
+     for( var name in this_result){
+        msg += name + ': ' + this_result[name] + '<br />';
+     }
+     msg += '<hr>';
+
+  }
+	jQuery("#result").text('');
+  jQuery('#result').append(msg);
+
+}
+/////////////////////////
+function addToSelect(){
+  if( nhc_results.length == 0){
+    alert("No NHC Results. Run Check Feed first.");
+    return;
+  }
+  var add_options = [];
+  for(var i = 0; i < nhc_results.length && i < nhc_results.length; i++) {
+    var key = nhc_results[i].link;
+    var label = nhc_results[i].title;
+    add_options.push('<option value="'+ key +'">'+ label +'</option>');
+  }
+  $('#otherLayers').append(add_options.join(''));
+}
+</script>
+
+</head>
+<body>
+<h2>NHC Atlantic Storm  RSS feed Parser</h2>
+Located at: <a target="_new" href="http://www.nhc.noaa.gov/index-at.xml">http://www.nhc.noaa.gov/index-at.xml</a>
+<p>Requires jQuery and the jFeed plugin<br />
+<a href="http://jquery.com">http://jquery.com</a><br />
+<a href="http://hovinne.com/articles/jfeed-jquery-rss-atom-feed-parser-plugin">http://hovinne.com/articles/jfeed-jquery-rss-atom-feed-parser-plugin</a>
+</p>
+<p>
+        NHC Active Storms:
+        <select id="otherLayers" onChange="handleKml(this.value);">
+            <option value="NONE">None</option>
+        </select>
+</p>
+<input type="button" value="Check NHC Feed" onClick="checkFeed('KMZ');">
+<input type="button" value="Show Results" onClick="showAll();">
+<input type="button" value="Add to Select List" onClick="addToSelect();">
+<div id="result" />
+</body>
+</html>
