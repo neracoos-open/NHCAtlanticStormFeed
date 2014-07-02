@@ -1,12 +1,14 @@
 ///////////////////////
 // Author: Eric Bridger ebridger@gmri.org  eric.bridger@gmail.com
-// Date:   Aug. 2012
+// Date:    Aug. 2012
+// Updated: Jul. 2014 - Version 2.0
 // Describption: Use jQuery and jFeed plugin to parse National Hurricane Center's Active Atlantic Storms RSS feed.
 // and turn them into useful objects.  In particular the KMZ links for display in Google Maps or OpenLayers.
 // Requires:  jQuery >= 1.6
 // Tested with:  jQuery 1.7.1 http://code.jquery.com/jquery-1.7.1.min.js
 // Links:
-//  NHC RSS: http://www.nhc.noaa.gov/index-at.xml
+//  Jul. 2014 NHC changed their RSS feeds. http://www.nhc.noaa.gov/index-at.xml no longer has KMZ links.
+//  Based on the GIS RSS feed. http://www.nhc.noaa.gov/gis-at.xml no longer has KMZ links.
 //  jFeed Plugin: http://hovinne.com/articles/jfeed-jquery-rss-atom-feed-parser-plugin
 //  jQuery: http://jquery.com
 //////////////////////////
@@ -39,7 +41,7 @@ function filterNHCFeed(feed){
   nhc_results = [];
   var this_re = '';
   if(link_type === 'KMZ'){
-    this_re = new RegExp(/\(\.kmz\)$/);
+    this_re = new RegExp(/\[kmz\]/);
   }else{
     this_re = '';
   }
@@ -47,6 +49,7 @@ function filterNHCFeed(feed){
   var n = []; // for regEx.exec() captures
   var cur_storm_num = '';
   var cur_storm_name = '';
+  var cur_storm_year = '';
   var cur_storm_label = '';
   var cur_adv_num = '';
   for(var i = 0; i < feed.items.length && i < feed.items.length; i++) {
@@ -55,24 +58,27 @@ function filterNHCFeed(feed){
     if(! item.title.match(/Advisory|Best Track/) ) {
       continue;
     }
-
-    //  KMZ item titles don't have the Advisory number in them, so check other Forecast Advisory Titles
-    //  before check for KMZ links, save these in cur_* for use with KMZ items
-    if(item.title.match(/Forecast Advisory/) ) {
-      // Get storm label, name and advisory number
-      // Need / /g.exec() to get the captured elements n[1] ...  n[0] has the full string
-      // Words at the begining are the storm label: Tropical Storm, Tropical Depression, Hurricane, etc.
-      // RegEx: All word before all caps, 1 or 2 numbers is advisory number but could have an A at the end.
-      n = /^(.+)\W([A-Z]+)\W.+\W(\d{1,2}.*)$/g.exec(item.title);
-      if(n && n.length === 4){
-        cur_storm_label = n[1];
-        cur_storm_name = n[2];
-        cur_adv_num = n[3];
-      }
-    }
-    // Skip non KMZ items
+    // Skip non KMZ items. The gis-at.xml has all the meta data in the Advisory title,
+    // No longer a need to check other titles or links
     if(this_re && !item.title.match(this_re) ) {
       continue;
+    }
+
+    // KMZ Advisory title e.g. from 2014 
+    // <title>Advisory #003A Forecast Track [kmz] - Tropical Storm ARTHUR (AT1/AL012014)</title>
+    if(item.title.match(/Advisory/) ) {
+      // Get 5 metadata items: 
+      // Need g.exec() to get the captured elements n[1] ...  n[0] has the full string
+      // See item.title example above: cur_adv_num, cur_storm_label, cur_storm_name, cur_storm_num, cur_storm_year
+      // RegEx: Start with Advisory, # 3 number, with optional A then after dash - label, capital name, then number and year.
+      n = /^Advisory #(\d{3}\w{0,1}) .* - (.+) ([A-Z]+) \(AT1\/AL(\d{2})(\d{4}.*)\)$/g.exec(item.title);
+      if(n && n.length === 6){
+        cur_adv_num = n[1];
+        cur_storm_label = n[2];
+        cur_storm_name = n[3];
+        cur_storm_num = n[4];
+        cur_storm_year = n[5];
+      }
     }
 
     // Get storm_num from KMZ TRACK_latest link

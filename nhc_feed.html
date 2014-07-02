@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" >
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>NHC Atlantic Storm RSS feed Parser</title>
+<title>NHC Atlantic Storm GIS RSS feed Parser V2.0</title>
 <script src="http://code.jquery.com/jquery-1.7.1.min.js"></script> 
 <script type="text/javascript" src="jquery.jfeed.pack.js"></script>
 <script type="text/javascript" src="NHCStormFeed.js"></script>
@@ -11,7 +11,7 @@
 <script type="text/javascript">
 
 // Cross Domain Javascript limitation requires proxy.php for 
-var nhc_url = 'proxy.php?url=http://www.nhc.noaa.gov/index-at.xml';
+var nhc_url = 'proxy.php?url=http://www.nhc.noaa.gov/gis-at.xml';
 ////////////////////////
 function checkFeed(feed_type){
   // callback function is optional
@@ -50,12 +50,13 @@ function addToSelect(){
   }
   $('#otherLayers').append(add_options.join(''));
 }
+
 </script>
 
 </head>
 <body>
-<h2>NHC Atlantic Storm  RSS feed Parser</h2>
-Located at: <a target="_new" href="http://www.nhc.noaa.gov/index-at.xml">http://www.nhc.noaa.gov/index-at.xml</a>
+<h2>NHC Atlantic Storm GIS RSS feed Parser V2.0</h2>
+Located at: <a target="_new" href="http://www.nhc.noaa.gov/gis-at.xml">http://www.nhc.noaa.gov/gis-at.xml</a>
 <p>Requires jQuery and the jFeed plugin<br />
 <a href="http://jquery.com">http://jquery.com</a><br />
 <a href="http://hovinne.com/articles/jfeed-jquery-rss-atom-feed-parser-plugin">http://hovinne.com/articles/jfeed-jquery-rss-atom-feed-parser-plugin</a>
@@ -69,6 +70,7 @@ Located at: <a target="_new" href="http://www.nhc.noaa.gov/index-at.xml">http://
 <input type="button" value="Check NHC Feed" onClick="checkFeed('KMZ');">
 <input type="button" value="Show Results" onClick="showAll();">
 <input type="button" value="Add to Select List" onClick="addToSelect();">
+<br />
 <div id="result" />
 </body>
 </html>
