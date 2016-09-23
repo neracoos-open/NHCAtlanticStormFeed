@@ -32,3 +32,6 @@ Returns array of JSON objects.  E.g.
     type: TRACK
 
 Possible types: TRACK, CONE, WATCH, BEST_TRACK
+
+Note:
+ In 2016 season the NHC had changed the numbering of their latest feeds. Best track requires '2016' forecasts just '16'
